@@ -1,0 +1,12 @@
+Phone_call
+  inbound_number: string
+  caller_name: string
+  calling_time: integer
+  answer_number: string
+  duration: string
+  status: string
+
+User
+  number: string
+  name: string
+
