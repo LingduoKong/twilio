@@ -111,8 +111,8 @@ class TwilioController < ApplicationController
 	
 	def non_business
 		response = Twilio::TwiML::Response.new do |r|
-			r.Play "https://raw.githubusercontent.com/LingduoKong/project-2/master/NoWorkingTimeRecord.mp3"
-			r.Say 'Leave your message after the tone.'
+			r.Play "https://raw.githubusercontent.com/LingduoKong/pj_2/master/NoWorkingTimeRecord.mp3"
+			# r.Say 'Leave your message after the tone.'
 			r.Record :maxLength => '60', :transcribe => true, 
 			:transcribeCallback=> '/send-record',
 			:action => "/handle-record", :method => 'get'
@@ -122,59 +122,83 @@ class TwilioController < ApplicationController
 	
 	def business
 		
-		$numbers = ['+13122928193']
+		# initialize all values
+		if $numbers == nil
+			$numbers = [{number:'+13122928193', isbusy: false},{number:'+17752994774', isbusy: false}]
+		end
 		# $numbers = ['+17734928146','+14147597954']
-		
-		time = TZInfo::Timezone.get('America/Chicago').now.to_i
-		
 		if $incoming_calls == nil
 			$incoming_calls = {}
 		end
-		
 		if !$incoming_calls[params["Caller"]].present?
 			$incoming_calls[params["Caller"]] = {}
-		end
-		
-		if params['index'].present?
-			index = params['index'].to_i
-		else
-			index = 0
-		end
-		
-		response = Twilio::TwiML::Response.new do |r|
-			if index < $numbers.length
-				user = User.find_by_number(params["Caller"])
-				if user.present?
-					$incoming_calls[params["Caller"]]['name'] = user.name
-				else
-					$incoming_calls[params["Caller"]]['name'] = "unknown caller"
-				end
-				$incoming_calls[params["Caller"]]['time'] = time
-				$incoming_calls[params["Caller"]]['calling_number'] = $numbers[index]
-				$incoming_calls[params["Caller"]]['status'] = 'ringing'
-				$incoming_calls[params['Caller']]['Duration'] = params['DialCallDuration']
-
-				r.Dial :timeout => '10', :action => "/dail-result?index=#{index}", :method => 'get' do |d|
-					d.Number $numbers[index]
-				end
+			user = User.find_by_number(params["Caller"])
+			if user.present?
+				$incoming_calls[params["Caller"]]['name'] = user.name
 			else
-				$incoming_calls[params["Caller"]]['calling_number'] = nil
-				$incoming_calls[params["Caller"]]['status'] = 'answered by voice mail'
-				r.Play "https://raw.githubusercontent.com/LingduoKong/project-2/master/WorkingTimeRecording.mp3"
+				$incoming_calls[params["Caller"]]['name'] = "unknown caller"
+			end
+		end
+		
+		index = 0
+		$numbers.each do |number|
+			if number[:isbusy]
+				$incoming_calls[params['Caller']][number[:number]] = 'busy'
+				index += 1
+			else
+				if $incoming_calls[params['Caller']][number[:number]].present?
+					if $incoming_calls[params['Caller']][number[:number]] == 'busy'
+						$incoming_calls[params['Caller']][number[:number]] = 'not-busy'
+						break
+					else 
+						index += 1
+					end
+				else
+					$incoming_calls[params['Caller']][number[:number]] = 'not-busy'
+					break
+				end
+			end
+		end
+		
+		puts index
+		puts $numbers
+		puts $incoming_calls
+
+		time = TZInfo::Timezone.get('America/Chicago').now.to_i
+		$incoming_calls[params['Caller']]['time'] = time
+		
+		if index >= $numbers.length 
+			response = Twilio::TwiML::Response.new do |r|
+				r.Play "https://raw.githubusercontent.com/LingduoKong/pj_2/master/WorkingTimeRecording.mp3"
 				r.Record :maxLength => '30', :transcribe => true, 
 				:transcribeCallback=> '/send-record',
 				:action => "/handle-record?Caller=#{params["Caller"]}", :method => 'get'
-				
-				Phone_call.create(
+			end
+			
+			Phone_call.create(
 				inbound_number: params['Caller'],
 				caller_name: $incoming_calls[params['Caller']]['name'],
 				calling_time: $incoming_calls[params['Caller']]['time'],
-				answer_number: $numbers[index], 
+				answer_number: nil, 
 				duration: params['DialCallDuration'],
-				status: $incoming_calls[params["Caller"]]['status']
+				status: 'answered by voice mail'
 				)
-				
+			
+			$incoming_calls.delete(params['Caller'])
+	
+		else
+			
+			response = Twilio::TwiML::Response.new do |r|
+				r.Dial :timeout => '10', :action => "/dail-result?index=#{index}", :method => 'get' do |d|
+					d.Number $numbers[index][:number]
+				end
 			end
+			
+			$incoming_calls[params["Caller"]]['time'] = time
+			$incoming_calls[params["Caller"]]['calling_number'] = $numbers[index][:number]
+			$incoming_calls[params["Caller"]]['status'] = 'ringing'
+
+			$numbers[index][:isbusy] = true
 		end
 		render xml: response.text
 	end
@@ -182,21 +206,22 @@ class TwilioController < ApplicationController
 	def dail_result
 		puts params['DialCallStatus']
 		index = params['index'].to_i
-		
+		$numbers[index][:isbusy] = false
+
 		if params['DialCallStatus'] == 'no-answer' && params["CallStatus"] == 'completed'
 			$incoming_calls[params['Caller']]['status'] = 'hang up by caller'
 			Phone_call.create(
 				inbound_number: params['Caller'],
 				caller_name: $incoming_calls[params['Caller']]['name'],
 				calling_time: $incoming_calls[params['Caller']]['time'],
-				answer_number: $numbers[index], 
+				answer_number: $numbers[index][:number], 
 				duration: 0,
 				status: 'hang up by caller'
 				)
+			$incoming_calls.delete(params['Caller'])
 			render nothing: true
 		elsif params['DialCallStatus'] != 'completed'
-			index += 1
-			redirect_to "/business?index=#{index}"
+			redirect_to "/business"
 		else
 			$incoming_calls[params['Caller']]['status'] = 'finish talking'
 			$incoming_calls[params['Caller']]['Duration'] = params['DialCallDuration']
@@ -204,10 +229,11 @@ class TwilioController < ApplicationController
 				inbound_number: params['Caller'],
 				caller_name: $incoming_calls[params['Caller']]['name'],
 				calling_time: $incoming_calls[params['Caller']]['time'],
-				answer_number: $numbers[index], 
+				answer_number: $numbers[index][:number], 
 				duration: params['DialCallDuration'],
 				status: 'finish talking'
 				)
+			$incoming_calls.delete(params['Caller'])
 			render nothing: true
 		end
 	end
