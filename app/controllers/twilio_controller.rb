@@ -3,15 +3,8 @@ class TwilioController < ApplicationController
 	skip_before_filter  :verify_authenticity_token
 	
 	def root
-
-		# @t = Twilio::TwiML::Response.new do |r|
-		# 	r.Say "Hello #{name}"
-		# 	r.Gather :numDigits => '1', :action => '/hello-monkey/handle-gather', :method => 'get' do |g|
-		# 		g.Say 'To speak to a real monkey, press 1.'
-		# 		g.Say 'Press 2 to record your own monkey howl.'
-		# 		g.Say 'Press any other key to start over.'
-		# 	end
-		# end
+		require 'concurrent'
+		
 		tz = TZInfo::Timezone.get('America/Chicago')
 		h = tz.now.hour
 		wday = tz.now.wday
@@ -66,13 +59,6 @@ class TwilioController < ApplicationController
 		account_sid = Rails.application.secrets.TWILIO_ACCOUNT_SID
 		auth_token = Rails.application.secrets.TWILIO_AUTH_TOKEN
 		client = Twilio::REST::Client.new account_sid, auth_token
-		# friends.each do |key, value|
-		# 	client.account.messages.create(
-		# 		:from => from,
-		# 		:to => params['to'],
-		# 		:body => params['message']
-		# 		)
-		# end
 		client.account.messages.create(
 		:from => from,
 		:to => params['to'],
@@ -112,7 +98,6 @@ class TwilioController < ApplicationController
 	def non_business
 		response = Twilio::TwiML::Response.new do |r|
 			r.Play "https://raw.githubusercontent.com/LingduoKong/pj_2/master/NoWorkingTimeRecord.mp3"
-			# r.Say 'Leave your message after the tone.'
 			r.Record :maxLength => '60', :transcribe => true, 
 			:transcribeCallback=> '/send-record',
 			:action => "/handle-record", :method => 'get'
@@ -124,9 +109,9 @@ class TwilioController < ApplicationController
 		
 		# initialize all values
 		if $numbers == nil
-			$numbers = [{number:'+13122928193', isbusy: false},{number:'+17752994774', isbusy: false}]
+			$numbers = [{number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
+				{number:'+17752994774', isbusy: Concurrent::Atom.new(false)}]
 		end
-		# $numbers = ['+17734928146','+14147597954']
 		if $incoming_calls == nil
 			$incoming_calls = {}
 		end
@@ -142,20 +127,21 @@ class TwilioController < ApplicationController
 		
 		index = 0
 		$numbers.each do |number|
-			if number[:isbusy]
-				$incoming_calls[params['Caller']][number[:number]] = 'busy'
-				index += 1
-			else
-				if $incoming_calls[params['Caller']][number[:number]].present?
-					if $incoming_calls[params['Caller']][number[:number]] == 'busy'
-						$incoming_calls[params['Caller']][number[:number]] = 'not-busy'
+			if $incoming_calls[params['Caller']][number[:number]].present?
+				if $incoming_calls[params['Caller']][number[:number]] == 'busy'
+					if number[:isbusy].compare_and_set(false,true)
 						break
-					else 
+					else
 						index += 1
 					end
 				else
+					index += 1
+				end
+			else
+				if number[:isbusy].compare_and_set(false,true)
 					$incoming_calls[params['Caller']][number[:number]] = 'not-busy'
-					break
+				else
+					$incoming_calls[params['Caller']][number[:number]] = 'busy'
 				end
 			end
 		end
@@ -198,7 +184,6 @@ class TwilioController < ApplicationController
 			$incoming_calls[params["Caller"]]['calling_number'] = $numbers[index][:number]
 			$incoming_calls[params["Caller"]]['status'] = 'ringing'
 
-			$numbers[index][:isbusy] = true
 		end
 		render xml: response.text
 	end
@@ -206,7 +191,10 @@ class TwilioController < ApplicationController
 	def dail_result
 		puts params['DialCallStatus']
 		index = params['index'].to_i
-		$numbers[index][:isbusy] = false
+		
+		if !$numbers[index][:isbusy].compare_and_set(true,false)
+			puts 'thread error'
+		end
 
 		if params['DialCallStatus'] == 'no-answer' && params["CallStatus"] == 'completed'
 			$incoming_calls[params['Caller']]['status'] = 'hang up by caller'
