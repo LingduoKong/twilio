@@ -4,19 +4,17 @@
 <div id="history"></div>
 
 <script> 
-setInterval(function(){get_fb();}, 1000);
-function get_fb(){
+setInterval(function(){get_info();}, 1000);
+function get_info(){
     var calling_data = $.ajax({
         type: "get",
-        url: "https://workspace-lingduokong.c9.io/calling_info_callback",
+        url: "/calling_info_callback",
         async: false,
-    }).success(function(){
-        setTimeout(function(){get_fb();}, 1000);
     }).responseText;
     
     var calling_history_data = $.ajax({
         type: "get",
-        url: "https://workspace-lingduokong.c9.io/calling_history_callback",
+        url: "/calling_history_callback",
         async: false,
     }).responseText;
     
@@ -25,7 +23,7 @@ function get_fb(){
     
     var out = "<table border='1' style='width:100%'>" + 
         "<tr><th>caller number</th><th>name</th><th>time</th><th>ringing number</th><th>status</th>" + 
-        "<th>duration</th><th>timer</th></tr> ";
+        "<th>timer</th></tr>";
     $.each(obj, function (key, data) {
         out += "<tr>";
         out += "<td>" + key + "</td>";
@@ -35,13 +33,7 @@ function get_fb(){
         out += "<td>" + data.calling_number + "</td>"
         out += "<td class='status'>" + data.status + "</td>"
         
-        if (data.Duration != null){
-            out += "<td>" + secondsToHms(data.Duration) + "</td>"
-        }
-        else {
-            out += "<td>no data</td>"
-        }
-        if (data.status == "talking"){
+        if (data.status == "talking" || data.status == "calling center answers"){
             out += "<td>" + startTimer(date) + "</td>";
         }
         else {
@@ -81,6 +73,8 @@ function get_fb(){
             x[i].parentElement.style.backgroundColor = "yellow";
         }
     }
+    
+    setTimeout(function(){get_info();}, 1000);
 }
 
 function startTimer(date) {
