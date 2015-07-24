@@ -5,6 +5,7 @@ Phone_call
   answer_number: string
   duration: string
   status: string
+  record_url: string
 
 User
   number: string
