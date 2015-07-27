@@ -8,7 +8,7 @@ class AppointmentreminderController < ApplicationController
   ACCOUNT_TOKEN = 'XXXXXXXXXXXXXXXXXXX'
 
   # base URL of this application
-  BASE_URL = "https://twilio-rails-4-ssharba.c9.io/appointmentreminder"
+  BASE_URL = "/appointmentreminder"
 
   # Outgoing Caller ID you have previously validated with Twilio
   CALLER_ID = '+1XXXXXXXX'

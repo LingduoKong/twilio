@@ -4,6 +4,8 @@ class TwilioController < ApplicationController
 	
 	def root
 		require 'concurrent'
+
+		$phone_history = Phone_call.order(calling_time: :desc).limit(10)
 		
 		tz = TZInfo::Timezone.get('America/Chicago')
 		h = tz.now.hour
@@ -92,7 +94,7 @@ class TwilioController < ApplicationController
 	end
 	
 	def calling_history_callback
-		render json: @phone_calls = Phone_call.order(calling_time: :desc).limit(10)
+		render json: @phone_calls = $phone_history
 	end
 	
 	def non_business
@@ -224,6 +226,8 @@ class TwilioController < ApplicationController
 			$incoming_calls.delete(params['Caller'])
 			render nothing: true
 		end
+
+		$phone_history = Phone_call.order(calling_time: :desc).limit(10)
 			
 	end
 	
