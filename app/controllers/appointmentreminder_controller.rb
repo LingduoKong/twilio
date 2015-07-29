@@ -2,10 +2,10 @@
 require "twilio-ruby"
 
 class AppointmentreminderController < ApplicationController
-    skip_before_action :verify_authenticity_token    
+  skip_before_action :verify_authenticity_token    
   # your Twilio authentication credentials
-  ACCOUNT_SID = 'XXXXXXXXXXXXXXXXXXX'
-  ACCOUNT_TOKEN = 'XXXXXXXXXXXXXXXXXXX'
+  ACCOUNT_SID = Rails.application.secrets.TWILIO_ACCOUNT_SID
+  ACCOUNT_TOKEN = Rails.application.secrets.TWILIO_AUTH_TOKEN
 
   # base URL of this application
   BASE_URL = "/appointmentreminder"

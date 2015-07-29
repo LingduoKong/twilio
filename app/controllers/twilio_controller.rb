@@ -94,7 +94,10 @@ class TwilioController < ApplicationController
 	end
 	
 	def calling_history_callback
-		render json: @phone_calls = $phone_history
+		if $phone_history == nil
+			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
+		end
+		render json: $phone_history
 	end
 	
 	def non_business
@@ -114,9 +117,9 @@ class TwilioController < ApplicationController
 			$numbers = [
 				# {number:'+17734928146', isbusy: Concurrent::Atom.new(false)},
 				# {number:'+14147597954', isbusy: Concurrent::Atom.new(false)},
-				# {number:'+14149302932', isbusy: Concurrent::Atom.new(false)}
-				{number:'+12242009797', isbusy: Concurrent::Atom.new(false)},
-				# {number:'+13122928193', isbusy: Concurrent::Atom.new(false)}
+				# {number:'+14149302932', isbusy: Concurrent::Atom.new(false)},
+				# {number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
+				{number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
 				]
 		end
 		if $incoming_calls == nil
@@ -162,6 +165,7 @@ class TwilioController < ApplicationController
 		$incoming_calls[params['Caller']]['time'] = time
 		
 		if index >= $numbers.length 
+			
 			response = Twilio::TwiML::Response.new do |r|
 				r.Dial :timeout => '10', :action => "/dail-result", :method => 'get', :record => 'record-from-answer' do |d|
 					# d.Number '+14149302932'
@@ -196,7 +200,7 @@ class TwilioController < ApplicationController
 				puts 'thread error'
 			end
 		end
-	
+		
 		if params['DialCallStatus'] == 'no-answer' && params["CallStatus"] == 'completed'
 			$incoming_calls[params['Caller']]['status'] = 'hang up by caller'
 			Phone_call.create(
@@ -212,15 +216,20 @@ class TwilioController < ApplicationController
 		elsif params['DialCallStatus'] != 'completed'
 			redirect_to "/business"
 		else
-			$incoming_calls[params['Caller']]['status'] = 'finish talking'
+			# $incoming_calls[params['Caller']]['status'] = 'finish talking'
 			$incoming_calls[params['Caller']]['Duration'] = params['DialCallDuration']
+			
+			if $incoming_calls[params['Caller']]['status'] != "calling center answers"
+				$incoming_calls[params['Caller']]['status'] = 'finish talking'
+			end
+			
 			Phone_call.create(
 				inbound_number: params['Caller'],
 				caller_name: $incoming_calls[params['Caller']]['name'],
 				calling_time: $incoming_calls[params['Caller']]['time'],
 				answer_number: $incoming_calls[params['Caller']]['calling_number'], 
 				duration: params['DialCallDuration'],
-				status: 'finish talking',
+				status: $incoming_calls[params['Caller']]['status'],
 				record_url: params['RecordingUrl']
 				)
 			$incoming_calls.delete(params['Caller'])
