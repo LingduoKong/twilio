@@ -11,7 +11,7 @@ class TwilioController < ApplicationController
 			$incoming_calls = {}
 		end
 			
-		if h > 14 && h < 17 && wday != 0 && wday != 6
+		if h > 8 && h < 17 && wday != 0 && wday != 6
 			uuid = UUID.new.generate
 			$incoming_calls[uuid] = { :Caller => params["Caller"] }
 			redirect_to "/business?uuid=#{uuid}"
@@ -27,6 +27,7 @@ class TwilioController < ApplicationController
 		        pc.calling_time = tz.now.to_i
 		        pc.answer_number = "+18008008888"
 		        pc.status = "answered by voice mail"
+			pc.duration = 0
 		        pc.save
 			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
 		        id = pc.id
@@ -221,11 +222,15 @@ class TwilioController < ApplicationController
   
   def update_numbers
   	if !$incoming_calls.present?
-  		$numbers = []
-  		params["numbers"].each do |nb|
-  			$numbers.push({number:nb, isbusy: Concurrent::Atom.new(false)})
-  		end
-  		redirect_to "/numbers", notice: "update successfully"
+		if params["passwd"] !=  Rails.application.secrets.UPDATE_PASSWD
+			redirect_to "/numbers", notice: "password error"
+		else
+  			$numbers = []
+  			params["numbers"].each do |nb|
+  				$numbers.push({number:nb, isbusy: Concurrent::Atom.new(false)})
+  			end
+  			redirect_to "/numbers", notice: "update successfully"
+		end
   	else
   		redirect_to "/numbers", notice: "Can't not be updated now. Try it later!"
   	end
@@ -235,9 +240,6 @@ class TwilioController < ApplicationController
   def reset_numbers
   	require 'concurrent'      
     $numbers = [
-            # {number:'+17734928146', isbusy: Concurrent::Atom.new(false)},
-            # {number:'+13125959237', isbusy: Concurrent::Atom.new(false)},
-            # {number:'+13125959240', isbusy: Concurrent::Atom.new(false)},
             {number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
             {number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
             ]

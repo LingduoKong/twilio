@@ -1,22 +1,14 @@
 Rails.application.routes.draw do
   
-  match ':controller(/:action(/:id))', :via => [:get,:post]
+# match ':controller(/:action(/:id))', :via => [:get,:post]
   
   get '/' => 'twilio#root'
-
-  get '/handle-gather' => 'twilio#numbers'
 
   get '/handle-record' => 'twilio#record'
 
   post '/send-record' => 'twilio#email'
   
-  get '/new-message' => 'twilio#new_sms'
-  
-  post '/new-message' => 'twilio#send_sms'
-  
   get '/dail-result' => 'twilio#dail_result'
-  
-  get '/reply-message' => 'twilio#reply_sms'
   
   get '/calling_info' => 'twilio#calling_info'
   
@@ -31,5 +23,8 @@ Rails.application.routes.draw do
   get '/numbers' => 'twilio#numbers'
   
   post '/numbers' => 'twilio#update_numbers'
-  
+ 
+  get '/reports/statistics' => 'reports#statistics'
+
+  get '/reports/history_stats' => 'reports#history_stats'
 end
