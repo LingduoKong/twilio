@@ -11,50 +11,34 @@ class TwilioController < ApplicationController
 			$incoming_calls = {}
 		end
 			
-		if h > 8 && h < 17 && wday != 0 && wday != 6
+		if h > 14 && h < 17 && wday != 0 && wday != 6
 			uuid = UUID.new.generate
 			$incoming_calls[uuid] = { :Caller => params["Caller"] }
 			redirect_to "/business?uuid=#{uuid}"
 		else
-      pc = Phone_call.new
-      pc.inbound_number = params['Caller']
-      user = User.find_by_number(params["Caller"])
-      if user.present?
-              pc.caller_name = user.last_name + " " + user.first_name[0] + "."
-      else
-              pc.caller_name = "unknown caller"
-      end
-      pc.calling_time = tz.now.to_i
-      pc.answer_number = "+18008008888"
-      pc.status = "answered by voice mail"
-      pc.save
-      id = pc.id
-      redirect_to "/non_business?id=#{id}"
+	      		pc = Phone_call.new
+	      		pc.inbound_number = params['Caller']
+	      		user = User.find_by_number(params["Caller"])
+			if user.present?
+		                pc.caller_name = user.last_name + " " + user.first_name[0] + "."
+      		        else
+		                pc.caller_name = "unknown caller"
+		        end
+		        pc.calling_time = tz.now.to_i
+		        pc.answer_number = "+18008008888"
+		        pc.status = "answered by voice mail"
+		        pc.save
+			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
+		        id = pc.id
+		        redirect_to "/non_business?id=#{id}"
 		end
-	end
-
-	def numbers
-		redirect '/' unless ['1', '2'].include?(params['Digits'])
-		if params['Digits'] == '1'
-			@response = Twilio::TwiML::Response.new do |r|
-				r.Play 'http://demo.twilio.com/hellomonkey/monkey.mp3'
-				# r.Say 'The call failed or the remote party hung up. Goodbye.'
-			end
-		elsif params['Digits'] == '2'
-			@response = Twilio::TwiML::Response.new do |r|
-				r.Say 'Record your monkey howl after the tone.'
-				r.Record :maxLength => '30', :transcribe => true, 
-				:transcribeCallback=> '/send-record',
-				:action => '/handle-record', :method => 'get'
-			end
-		end
-		render xml: @response.text
 	end
 
 	def record
 		pc = Phone_call.find_by_id(params["id"].to_i)
 		pc.record_url = params['RecordingUrl']
-		pc.save	
+		pc.save
+		$phone_history = Phone_call.order(calling_time: :desc).limit(10)	
 		@t = Twilio::TwiML::Response.new do |r|
 			r.Say 'Thanks for your patience. Goodbye.'
 		end
