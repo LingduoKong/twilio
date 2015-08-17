@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 20150807141428) do
 
   create_table "phone_calls", force: :cascade do |t|
     t.string  "inbound_number"
@@ -20,11 +20,16 @@ ActiveRecord::Schema.define(version: 0) do
     t.string  "answer_number"
     t.string  "duration"
     t.string  "status"
+    t.string  "record_url"
+    t.string  "uuid"
   end
 
   create_table "users", force: :cascade do |t|
     t.string "number"
-    t.string "name"
+    t.string "first_name"
+    t.string "last_name"
   end
+
+  add_index "users", ["number"], name: "index_users_on_number"
 
 end

@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
   
+  match ':controller(/:action(/:id))', :via => [:get,:post]
+  
   get '/' => 'twilio#root'
 
   get '/handle-gather' => 'twilio#numbers'
@@ -26,7 +28,8 @@ Rails.application.routes.draw do
   
   get '/business' => 'twilio#business'
   
-  match ':controller(/:action)', :via => [:get,:post]
-
+  get '/numbers' => 'twilio#numbers'
+  
+  post '/numbers' => 'twilio#update_numbers'
   
 end

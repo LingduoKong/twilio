@@ -1,0 +1,80 @@
+<div id="search">
+<form action="/reports/history_stats" style="margin:10px;" class="form-inline has-clear">
+    <input type="text" name="from" id="from" class="datepicker form-control" placeholder="From" value=<%=params[:from]%> >
+    <input type="text" name="caller_name" id="caller_name" class="form-control" placeholder="Caller name" value=<%=params[:caller_name]%> >
+    <input type="text" name="answer_number" id="answer_number" class="form-control" placeholder="Answer number" value=<%=params[:answer_number]%> >
+    <input type="submit" class="btn btn-primary" value="Search">
+    <br>
+    <br>
+    <input type="text" name="to" id="to" class="datepicker form-control" placeholder="To" value=<%=params[:to]%> >
+    <input type="text" name="caller_number" id="caller_number" class="form-control" placeholder="Caller number" value=<%=params[:caller_number]%> >
+    <select class="form-control" name="status" value="hang up by caller" id="select">
+        <option value="All status">All status</option>
+        <option value="finish talking">finish talking</option>
+        <option value="hang up by caller">hang up by caller</option>
+        <option value="calling center answers">calling center answers</option>
+        <option value="answered by voice mail">answered by voice mail</option>
+    </select>
+    <a href="/reports/history_stats" class="btn btn-warning">reset</a>
+</form>
+</div>
+<hr>
+ <table table class='table-responsive table table-striped'>
+     <thead>
+         <tr>
+            <th>Caller Number</th>
+            <th>Caller Name</th>
+            <th>Calling Time</th>
+            <th>Answer Number</th>
+            <th>Duartion</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <% @history_data.each do |call| %>
+    <tr>
+        <td class="number"><%= call.inbound_number%></td>
+        <td><%= call.caller_name%></td>
+        <td class="time"><%= call.calling_time%></td>
+        <td class="number"><%= call.answer_number%></td>
+        <td><%= call.duration%></td>
+        <td class='status'><%= call.status%></td>
+    </tr>
+    <% end %>
+ </table>
+ <div style="text-align:center;margin:20px">
+    <% if @page_number != 1 %>
+    <% for i in 1..@page_number %>
+        <% if @current_page == i %>
+            <u><%= link_to i, @page_url+"page=#{i}" %></u>
+        <% else %>
+            <%= link_to i, @page_url+"page=#{i}" %>
+        <% end %>
+        &nbsp
+    <% end %>
+    <% end %>
+</div>
+ 
+ <script>
+    setNumberFormat();
+    setStatus();
+    regularDate();
+    if ("<%= j params[:status] %>" == ""){
+        document.getElementById('select').value = "All status";
+    }
+    else{
+        document.getElementById('select').value = "<%= j params[:status] %>";
+    }
+    
+    
+$(function() {
+    $( "#caller_name" ).autocomplete({
+      source: <%= raw @names.as_json %>
+    })    
+    $( "#answer_number" ).autocomplete({
+      source: <%= raw @answer_number.as_json %>
+    });
+    $( "#caller_number" ).autocomplete({
+      source: <%= raw @inbound_number.as_json %>
+    });
+  });
+ </script>

@@ -1,93 +1,17 @@
+<div class='container'>
+<h3 class='page-header'>Live Calls</h3>
 <div id="test"></div>
 <br>
-<br>
-<div id="history"></div>
+<h3 class='page-header'>
+    Call History
+    <button class="btn btn-sm btn-primary pull-right" id='button'>Show/Hide </button>
+</h3>
+<div id="history" class='scroll-box'></div>
+</div>
 
 <script> 
+$( "#button" ).click(function() {
+    $( "#history" ).toggle();
+});
 setInterval(function(){get_info();}, 1000);
-function get_info(){
-    var calling_data = $.ajax({
-        type: "get",
-        url: "/calling_info_callback",
-        async: false,
-    }).responseText;
-    
-    var calling_history_data = $.ajax({
-        type: "get",
-        url: "/calling_history_callback",
-        async: false,
-    }).responseText;
-    
-    var obj = JSON.parse(calling_data);
-    var history_data = JSON.parse(calling_history_data);
-    
-    var out = "<table border='1' style='width:100%'>" + 
-        "<tr><th>caller number</th><th>name</th><th>time</th><th>ringing number</th><th>status</th>" + 
-        "<th>timer</th></tr>";
-    $.each(obj, function (key, data) {
-        out += "<tr>";
-        out += "<td>" + key + "</td>";
-        out += "<td>" + data.name + "</td>"
-        var date = new Date(data.time * 1000);
-        out += "<td>" + date.toISOString().replace(/T|Z/gi, " ") + "</td>";
-        out += "<td>" + data.calling_number + "</td>"
-        out += "<td class='status'>" + data.status + "</td>"
-        
-        if (data.status == "talking" || data.status == "calling center answers"){
-            out += "<td>" + startTimer(date) + "</td>";
-        }
-        else {
-            out += "<td>not timing now</td>";
-        }
-        out += "</tr>";
-    });
-    out += "</table>"
-    $('#test').html(out);
-    
-    var history = "<table border='1' style='width:100%'><tr><th>Caller Number</th><th>Caller Name</th>" + 
-        "<th>Calling Time</th><th>Answer Number</th><th>Duartion</th><th>Status</th></tr>";
-    for (var i=0; i<history_data.length; i++){
-        history += "<tr>";
-        history += "<td>" + history_data[i].inbound_number + "</td>";
-        history += "<td>" + history_data[i].caller_name + "</td>";
-        var date = new Date(history_data[i].calling_time * 1000);
-        history += "<td>" + date.toISOString().replace(/T|Z/gi, " ") + "</td>";
-        history += "<td>" + history_data[i].answer_number + "</td>";
-        history += "<td>" + history_data[i].duration + "</td>";
-        history += "<td class='status'>" + history_data[i].status + "</td>";
-        history += "</tr>";
-    }
-    
-    history += "</table>"
-    $('#history').html(history);
-    
-    var x = document.getElementsByClassName("status");
-    for (var i = 0; i < x.length ; i++){
-        if(x[i].innerHTML == "finish talking"){
-            x[i].parentElement.style.backgroundColor = "green";
-        }
-        else if(x[i].innerHTML == "hang up by caller"){
-            x[i].parentElement.style.backgroundColor = "red";
-        }
-        else {
-            x[i].parentElement.style.backgroundColor = "yellow";
-        }
-    }
-    
-    setTimeout(function(){get_info();}, 1000);
-}
-
-function startTimer(date) {
-    var now = new Date();
-    sec = parseInt(now.getTime() - date.getTime())/1000 - 5*3600;
-    return secondsToHms(sec)
-}
-
-function secondsToHms(d) {
-d = Number(d);
-var h = Math.floor(d / 3600);
-var m = Math.floor(d % 3600 / 60);
-var s = Math.floor(d % 3600 % 60);
-return ((h >= 0 ? h + ":" + (m < 10 ? "0" : "") : "") + m + ":" + (s < 10 ? "0" : "") + s); }
-
 </script>

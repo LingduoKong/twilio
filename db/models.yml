@@ -6,8 +6,9 @@ Phone_call
   duration: string
   status: string
   record_url: string
+  uuid: string
 
 User
   number: string
-  name: string
-
+  first_name: string
+  last_name: string

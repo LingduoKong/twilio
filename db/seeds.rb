@@ -6,5 +6,7 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
     User.delete_all
-    User.create(number: '+13122928193', name: 'Lingduo Kong')
-    User.create(number: '+17738928145', name: 'Adriana Castanrda')
+    User.create(number: '+13122928193', first_name: 'Kong', last_name: 'Lingduo')
+    User.create(number: '+17738928145', first_name: 'Castanrda', last_name: 'Adriana')
+    User.create(number: '+12242009797', first_name: 'Samer', last_name: 'Sharba')
+
