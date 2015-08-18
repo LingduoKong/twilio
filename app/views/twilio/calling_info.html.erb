@@ -20,7 +20,7 @@ function get_info(){
     show_live_calls();
     setStatus();
     setNumberFormat();
-    setTimeout(function(){get_info();}, 1000);
+    timeout = setTimeout(function(){get_info();}, 1000);
 }
 
 function show_live_calls(){
