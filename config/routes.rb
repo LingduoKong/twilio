@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   
   get '/' => 'twilio#root'
 
+  get '/concierge_entrance' => 'twilio#concierge_entrance'
+
   get '/handle-record' => 'twilio#record'
 
   post '/send-record' => 'twilio#email'

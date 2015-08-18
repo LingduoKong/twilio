@@ -2,7 +2,7 @@ class TwilioController < ApplicationController
 	
 	skip_before_filter  :verify_authenticity_token
 	
-	def root
+	def concierge_entrance
 		tz = TZInfo::Timezone.get('America/Chicago')
 		h = tz.now.hour
 		wday = tz.now.wday
