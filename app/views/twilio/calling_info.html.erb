@@ -13,14 +13,15 @@
 $( "#button" ).click(function() {
     $( "#history" ).toggle();
 });
-setInterval(function(){get_info();}, 1000);
+
+Interval = setInterval(function(){get_info();}, 1000);
 
 function get_info(){
     show_history_calls();
     show_live_calls();
     setStatus();
     setNumberFormat();
-    timeout = setTimeout(function(){get_info();}, 1000);
+    // timeout = setTimeout(function(){get_info();}, 1000);
 }
 
 function show_live_calls(){
