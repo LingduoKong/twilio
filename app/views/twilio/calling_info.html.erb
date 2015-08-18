@@ -21,7 +21,6 @@ function get_info(){
     show_live_calls();
     setStatus();
     setNumberFormat();
-    // timeout = setTimeout(function(){get_info();}, 1000);
 }
 
 function show_live_calls(){
@@ -39,8 +38,7 @@ function show_live_calls(){
         out += "<tr>";
         out += "<td class='number'>" + data.Caller + "</td>";
         out += "<td>" + data.name + "</td>"
-        var date = new Date(data.time * 1000);
-        out += "<td>" + timeFormat(date) + "</td>";
+        out += "<td>" + timeFormat(new Date(data.time * 1000)) + "</td>";
         out += "<td class='number'>" + data.calling_number + "</td>"
         out += "<td class='status'>" + data.status + "</td>"
         

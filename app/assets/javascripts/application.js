@@ -9,7 +9,12 @@ var Interval;
 function startTimer(date) {
     var now = new Date();
     var sec = parseInt(now.getTime() - date.getTime())/1000 - 5*3600;
-    return secondsToHms(sec);
+    if (sec >= 0 ){
+        return secondsToHms(sec);
+    }
+    else {
+        return 0;
+    }
 }
 
 function secondsToHms(d) {
