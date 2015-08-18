@@ -54,7 +54,7 @@ function show_history_calls(){
     }).responseText;
     var history_data = JSON.parse(calling_history_data);
     var history = "<table class='table-responsive table table-striped'><thead><tr><th>Caller Number</th><th>Caller Name</th>" + 
-        "<th>Calling Time</th><th>Answer Number</th><th>Duartion</th><th>Status</th></tr></thead>";
+        "<th>Calling Time</th><th>Answer Number</th><th>Duration</th><th>Status</th></tr></thead>";
     history += "<tbody>";    
     if (history_data != null){
         for (var i=0; i<history_data.length; i++){
