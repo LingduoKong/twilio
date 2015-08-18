@@ -38,7 +38,8 @@ function show_live_calls(){
         out += "<tr>";
         out += "<td class='number'>" + data.Caller + "</td>";
         out += "<td>" + data.name + "</td>"
-        out += "<td>" + timeFormat(new Date(data.time * 1000)) + "</td>";
+        var date = new Date(data.time * 1000);
+        out += "<td>" + timeFormat(date) + "</td>";
         out += "<td class='number'>" + data.calling_number + "</td>"
         out += "<td class='status'>" + data.status + "</td>"
         
