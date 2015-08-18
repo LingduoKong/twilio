@@ -4,6 +4,7 @@
 //= require turbolinks
 //= require_tree .
 
+var Interval;
 
 function startTimer(date) {
     var now = new Date();
