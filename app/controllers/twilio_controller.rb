@@ -10,28 +10,28 @@ class TwilioController < ApplicationController
 		if $incoming_calls == nil
 			$incoming_calls = {}
 		end
-			
+		
 		if h > 8 && h < 17 && wday != 0 && wday != 6
 			uuid = UUID.new.generate
 			$incoming_calls[uuid] = { :Caller => params["Caller"] }
 			redirect_to "/business?uuid=#{uuid}"
 		else
-	      		pc = Phone_call.new
-	      		pc.inbound_number = params['Caller']
-	      		user = User.find_by_number(params["Caller"])
+			pc = Phone_call.new
+			pc.inbound_number = params['Caller']
+			user = User.find_by_number(params["Caller"])
 			if user.present?
-		                pc.caller_name = user.last_name + " " + user.first_name[0] + "."
-      		        else
-		                pc.caller_name = "unknown caller"
-		        end
-		        pc.calling_time = tz.now.to_i
-		        pc.answer_number = "+18008008888"
-		        pc.status = "answered by voice mail"
+				pc.caller_name = user.last_name + " " + user.first_name[0] + "."
+			else
+				pc.caller_name = "unknown caller"
+			end
+			pc.calling_time = tz.now.to_i
+			pc.answer_number = "+18008008888"
+			pc.status = "answered by voice mail"
 			pc.duration = 0
-		        pc.save
+			pc.save
 			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
-		        id = pc.id
-		        redirect_to "/non_business?id=#{id}"
+			id = pc.id
+			redirect_to "/non_business?id=#{id}"
 		end
 	end
 
@@ -147,7 +147,7 @@ class TwilioController < ApplicationController
 			
 			$incoming_calls[params["uuid"]]['calling_number'] = '+14149302932'
 			$incoming_calls[params["uuid"]]['status'] = 'calling center answers'
-		
+			
 		else
 			
 			response = Twilio::TwiML::Response.new do |r|
@@ -212,38 +212,38 @@ class TwilioController < ApplicationController
 	end
 	
 
-  
-  def numbers
-  	if $numbers == nil
-  		reset_numbers
-  	end
-  	render "numbers"
-  end
-  
-  def update_numbers
-  	if !$incoming_calls.present?
-		if params["passwd"] !=  Rails.application.secrets.UPDATE_PASSWD
-			redirect_to "/numbers", notice: "password error"
-		else
-  			$numbers = []
-  			params["numbers"].each do |nb|
-  				$numbers.push({number:nb, isbusy: Concurrent::Atom.new(false)})
-  			end
-  			redirect_to "/numbers", notice: "update successfully"
+	
+	def numbers
+		if $numbers == nil
+			reset_numbers
 		end
-  	else
-  		redirect_to "/numbers", notice: "Can't not be updated now. Try it later!"
-  	end
-  end
-  
-  private
-  def reset_numbers
-  	require 'concurrent'      
-    $numbers = [
-            {number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
-            {number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
-            ]
-    $incoming_calls = {}
-  end
+		render "numbers"
+	end
+	
+	def update_numbers
+		if !$incoming_calls.present?
+			if params["passwd"] !=  Rails.application.secrets.UPDATE_PASSWD
+				redirect_to "/numbers", notice: "password error"
+			else
+				$numbers = []
+				params["numbers"].each do |nb|
+					$numbers.push({number:nb, isbusy: Concurrent::Atom.new(false)})
+				end
+				redirect_to "/numbers", notice: "update successfully"
+			end
+		else
+			redirect_to "/numbers", notice: "Can't not be updated now. Try it later!"
+		end
+	end
+	
+	private
+	def reset_numbers
+		require 'concurrent'      
+		$numbers = [
+			{number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
+			{number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
+		]
+		$incoming_calls = {}
+	end
 	
 end

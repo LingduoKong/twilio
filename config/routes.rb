@@ -29,4 +29,5 @@ Rails.application.routes.draw do
   get '/reports/statistics' => 'reports#statistics'
 
   get '/reports/history_stats' => 'reports#history_stats'
+
 end
