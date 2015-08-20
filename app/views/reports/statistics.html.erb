@@ -1,0 +1,50 @@
+ <h1 class='page-header'>Call Statistics</h1>
+ <form action="/reports/statistics" style="margin:30px" class="form-inline" id="search">
+    <input type="radio" class="radio" name="days" value="10" id="y" <%= params["days"] == '10' ? "checked" : "" %>  />
+    <label for="y">Last 10 days</label>
+    <input type="radio" class="radio" name="days" value="30" id="z" <%= params["days"] == '30' ? "checked" : "" %> />
+    <label for="z">Last 30 days</label>
+    <input type="submit" value="Filter" class="btn btn-primary">
+    <a href="/reports/statistics" class="btn btn-warning">reset</a>
+</form>
+ <div class= "avg_duration">
+     <h2 class='page-header'>Average call duration by user</h2>
+ <table table class='table-responsive table table-striped'>
+    <tr class="header">
+      <th>Call Answered By</th>
+      <th>Number of recived calls</th>
+      <th>Average Call Duration</th>
+    </tr>
+    <% @users_avg_duration.each do |user| %>
+    <tr>
+      <td class="number"><%= user.answer_number %></td>
+      <td><%=  @total_call_numbers[user]  %></td>
+      <td><%= user.duration %></td>
+    </tr>
+    <% end %>
+  </table>
+</div>
+<div class = "avg_status">
+    <h2 class='page-header'>Average table by call status</h2>
+ <table table class='table-responsive table table-striped'>
+    <tr class="header">
+      <th>Call Answered By</th>
+      <th>Call Status</th>
+      <th> % </th>
+    </tr>
+    <% @call_status.each do |call| %>
+    <tr>
+      <td class="number"><%=call.answer_number%></td>
+      <td><%= call.status %></td>
+      <td><%= call.duration %></td>
+    </tr>
+    <% end %>
+  </table>
+</div>
+
+<script>
+    clearInterval(Interval);
+    setNumberFormat();
+    regularDate();
+</script>
+

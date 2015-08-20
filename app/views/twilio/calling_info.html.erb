@@ -1,0 +1,16 @@
+<h3 class='page-header'>Live Calls</h3>
+<div id="test"></div>
+<br>
+<h3 class='page-header'>
+	Call History
+	<button class="btn btn-sm btn-primary pull-right" id='button'>Show/Hide </button>
+</h3>
+<div id="history" class='scroll-box'></div>
+
+
+<script> 
+	$( "#button" ).click(function() {
+		$( "#history" ).toggle();
+	});
+	Interval = setInterval(function(){get_info();}, 1000);
+</script>

@@ -1,0 +1,47 @@
+<br>
+<form action="/numbers" class="form-inline input_fields_wrap" method="post">
+<button class="btn btn-success add_field_button" id="add">add</button>
+<input type="password" class="form-control" name="passwd" placeholder="password">
+<input type="submit" class="btn btn-primary" value="update">
+<br><br>
+<% for i in 0..$numbers.length-1 %>
+<div>
+<input type="text" name="numbers[]" class="form-control" value="<%=$numbers[i][:number]%>" >
+&nbsp&nbsp
+<a href="#" class="remove_field">Remove</a>
+<br>
+<br>
+</div>
+<% end %>
+</form>
+
+<script>
+clearInterval(Interval);
+
+$(document).ready(function() {
+    var max_fields      = 10; //maximum input boxes allowed
+    var wrapper         = $(".input_fields_wrap"); //Fields wrapper
+    var add_button      = $(".add_field_button"); //Add button ID
+    var input_block = "";
+    input_block += '<div><input type="text" class="form-control" name="numbers[]"/>';
+    input_block += '&nbsp&nbsp<a href="#" class="remove_field">Remove</a><br><br></div>';
+    
+    var x = 1; //initlal text box count
+    $(add_button).click(function(e){ 
+        //on add input button click
+        e.preventDefault();
+        if(x < max_fields){ //max input box allowed
+            x++; 
+            //text box increment
+            $(wrapper).append(input_block);
+            //add input box
+        }
+    });
+    
+    $(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+        e.preventDefault(); $(this).parent('div').remove(); 
+        x--;
+    })
+});
+</script>
+
