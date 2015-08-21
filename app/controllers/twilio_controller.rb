@@ -23,28 +23,7 @@ class TwilioController < ApplicationController
 			end
 			business_process(uuid,tz.now.to_i)
 		else
-			pc = Phone_call.new
-			pc.inbound_number = params['Caller']
-			user = User.find_by_number(params["Caller"])
-			if user.present?
-				pc.caller_name = user.last_name + " " + user.first_name[0] + "."
-			else
-				pc.caller_name = "unknown caller"
-			end
-			pc.calling_time = tz.now.to_i
-			pc.answer_number = "+18008008888"
-			pc.status = "answered by voice mail"
-			pc.duration = 0
-			pc.save
-			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
-			id = pc.id
-			response = Twilio::TwiML::Response.new do |r|
-				r.Play "https://raw.githubusercontent.com/LingduoKong/twilio/master/NoWorkingTimeRecord.mp3"
-				r.Record :maxLength => '60', :transcribe => true, 
-				:transcribeCallback=> "/send-record?id=#{id}",
-				:action => "/handle-record?id=#{id}", :method => 'get'
-			end
-			render xml: response.text
+			non_business_process(params['Caller'], tz.now.to_i)
 		end
 	end
 
@@ -238,6 +217,31 @@ class TwilioController < ApplicationController
 			$incoming_calls[uuid]['calling_number'] = $numbers[index][:number]
 			$incoming_calls[uuid]['status'] = 'ringing'
 
+		end
+		render xml: response.text
+	end
+
+	def non_business_process(caller_number, time)
+		pc = Phone_call.new
+		pc.inbound_number = caller_number
+		user = User.find_by_number(caller_number)
+		if user.present?
+			pc.caller_name = user.last_name + " " + user.first_name[0] + "."
+		else
+			pc.caller_name = "unknown caller"
+		end
+		pc.calling_time = time
+		pc.answer_number = "+18008008888"
+		pc.status = "answered by voice mail"
+		pc.duration = 0
+		pc.save
+		$phone_history = Phone_call.order(calling_time: :desc).limit(10)
+		id = pc.id
+		response = Twilio::TwiML::Response.new do |r|
+			r.Play "https://raw.githubusercontent.com/LingduoKong/twilio/master/NoWorkingTimeRecord.mp3"
+			r.Record :maxLength => '60', :transcribe => true, 
+			:transcribeCallback=> "/send-record?id=#{id}",
+			:action => "/handle-record?id=#{id}", :method => 'get'
 		end
 		render xml: response.text
 	end
