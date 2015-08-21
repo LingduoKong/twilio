@@ -5,7 +5,7 @@ class TwilioController < ApplicationController
 	def root_entrance
 		response = Twilio::TwiML::Response.new do |r|
 			r.Gather :numDigits => '1', :action => '/root_gathering', :method => 'get' do |g|
-				g.Say 'press 1. for English. or 2. for Spanish.', :voice => 'woman'
+				g.Say 'press 1. for English. press 2. for Spanish.', :voice => 'woman'
 			end
 		end
 		render xml: response.text
