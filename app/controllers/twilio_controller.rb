@@ -2,7 +2,27 @@ class TwilioController < ApplicationController
 	
 	skip_before_filter  :verify_authenticity_token
 	
+	def root_entrance
+		response = Twilio::TwiML::Response.new do |r|
+			r.Gather :numDigits => '1', :action => '/root_gathering', :method => 'get' do |g|
+				g.Say 'press 1. for English. or 2. for Spanish.', :voice => 'woman'
+			end
+		end
+		render xml: response.text
+	end
+		
+	def root_gathering
+		if params['Digits'] == '1'
+			redirect_to '/concierge_entrance?lg=en'
+		elsif params['Digits'] == '2'
+			redirect_to '/concierge_entrance?lg=es'
+		else
+			redirect_to '/root_entrance'
+		end
+	end
+	
 	def concierge_entrance
+		
 		tz = TZInfo::Timezone.get('America/Chicago')
 		h = tz.now.hour
 		wday = tz.now.wday
@@ -21,7 +41,7 @@ class TwilioController < ApplicationController
 			else
 				$incoming_calls[uuid]['name'] = "unknown caller"
 			end
-			business_process(uuid,tz.now.to_i)
+			business_process(uuid)
 		else
 			non_business_process(params['Caller'], tz.now.to_i)
 		end
@@ -101,7 +121,7 @@ class TwilioController < ApplicationController
 			$incoming_calls.delete(params['uuid'])
 			render nothing: true
 		elsif params['DialCallStatus'] != 'completed'
-			redirect_to "/business?uuid=#{params['uuid']}"
+			redirect_to "/business?uuid=#{params['uuid']}&lg=#{params['lg']}"
 		else
 			$incoming_calls[params['uuid']]['Duration'] = params['DialCallDuration']
 			
@@ -157,48 +177,56 @@ class TwilioController < ApplicationController
 	def reset_numbers
 		require 'concurrent'      
 		$numbers = [
-			{number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
-			{number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
+			{number:'+17138940710', isbusy: Concurrent::Atom.new(false), lg: ['en','es']},
+			{number:'+13122928193', isbusy: Concurrent::Atom.new(false), lg: ['en']},
+			{number:'+17738928145', isbusy: Concurrent::Atom.new(false), lg: ['es','en']},
 		]
 		$incoming_calls = {}
 		# call center number:
 		$call_center_number = "+13122928193"
 	end
 	
-	def business_process(uuid,time)
+	def business_process(uuid)
 		
 		index = 0
 		$numbers.each do |number|
-			if $incoming_calls[uuid][number[:number]].present?
-				if $incoming_calls[uuid][number[:number]] == 'busy'
-					if number[:isbusy].compare_and_set(false,true)
-						break
+			
+			if number[:lg].include?(params['lg'])
+
+				if $incoming_calls[uuid][number[:number]].present?
+					if $incoming_calls[uuid][number[:number]] == 'busy'
+						if number[:isbusy].compare_and_set(false,true)
+							break
+						else
+							index += 1
+						end
 					else
 						index += 1
 					end
 				else
-					index += 1
+					if number[:isbusy].compare_and_set(false,true)
+						$incoming_calls[uuid][number[:number]] = 'not-busy'
+						break
+					else
+						$incoming_calls[uuid][number[:number]] = 'busy'
+						index += 1
+					end
 				end
-			else
-				if number[:isbusy].compare_and_set(false,true)
-					$incoming_calls[uuid][number[:number]] = 'not-busy'
-					break
-				else
-					$incoming_calls[uuid][number[:number]] = 'busy'
-					index += 1
-				end
+			else 
+				index += 1
 			end
 		end
 		
 		puts index
-		# puts $incoming_calls
+		puts $incoming_calls
 
-		$incoming_calls[uuid]['time'] = time
+		$incoming_calls[uuid]['time'] = TZInfo::Timezone.get('America/Chicago').now.to_i
+
 		
 		if index >= $numbers.length 
 			
 			response = Twilio::TwiML::Response.new do |r|
-				r.Dial :timeout => '10', :action => "/dial-result?uuid=#{uuid}", :method => 'get', :record => 'record-from-answer' do |d|
+				r.Dial :timeout => '10', :action => "/dial-result?uuid=#{uuid}&lg=#{params['lg']}", :method => 'get', :record => 'record-from-answer' do |d|
 					d.Number $call_center_number 
 				end
 			end
@@ -209,7 +237,10 @@ class TwilioController < ApplicationController
 		else
 			
 			response = Twilio::TwiML::Response.new do |r|
-				r.Dial :timeout => '10', :action => "/dial-result?uuid=#{uuid}&index=#{index}", :method => 'get', :record => 'record-from-answer' do |d|
+				r.Dial  :timeout => '10', 
+						:action => "/dial-result?uuid=#{uuid}&index=#{index}&lg=#{params['lg']}", 
+						:method => 'get', 
+						:record => 'record-from-answer' do |d|
 					d.Number $numbers[index][:number]
 				end
 			end

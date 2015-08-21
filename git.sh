@@ -1,5 +1,5 @@
 #!/bin/bash
 
 git add -A
-git commit -m "extract non business funtion" 
+git commit -m "spanish language tree finished" 
 git push -u origin master

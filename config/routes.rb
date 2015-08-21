@@ -29,5 +29,11 @@ Rails.application.routes.draw do
   get '/reports/statistics' => 'reports#statistics'
 
   get '/reports/history_stats' => 'reports#history_stats'
+  
+  
+  
+  get '/root_entrance' => 'twilio#root_entrance'
+  
+  get '/root_gathering' => 'twilio#root_gathering'
 
 end
