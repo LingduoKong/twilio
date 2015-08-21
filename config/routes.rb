@@ -19,9 +19,7 @@ Rails.application.routes.draw do
   get '/calling_info_callback' => 'twilio#calling_info_callback'
   
   get '/calling_history_callback' => 'twilio#calling_history_callback'
-  
-  get '/non_business' => 'twilio#non_business'
-  
+    
   get '/business' => 'twilio#business'
   
   get '/numbers' => 'twilio#numbers'

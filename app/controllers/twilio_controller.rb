@@ -12,7 +12,7 @@ class TwilioController < ApplicationController
 		end
 
 		
-		if h > 10 && h < 17 && wday != 0 && wday != 6
+		if h > 8 && h < 17 && wday != 0 && wday != 6
 			uuid = UUID.new.generate
 			$incoming_calls[uuid] = { :Caller => params["Caller"] }
 			user = User.find_by_number(params["Caller"])
@@ -21,7 +21,7 @@ class TwilioController < ApplicationController
 			else
 				$incoming_calls[uuid]['name'] = "unknown caller"
 			end
-			business_process(uuid)
+			business_process(uuid,tz.now.to_i)
 		else
 			pc = Phone_call.new
 			pc.inbound_number = params['Caller']
@@ -186,7 +186,7 @@ class TwilioController < ApplicationController
 		$call_center_number = "+13122928193"
 	end
 	
-	def business_process(uuid)
+	def business_process(uuid,time)
 		
 		index = 0
 		$numbers.each do |number|
@@ -214,7 +214,6 @@ class TwilioController < ApplicationController
 		puts index
 		# puts $incoming_calls
 
-		time = TZInfo::Timezone.get('America/Chicago').now.to_i
 		$incoming_calls[uuid]['time'] = time
 		
 		if index >= $numbers.length 
