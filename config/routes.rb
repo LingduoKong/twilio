@@ -11,7 +11,7 @@ Rails.application.routes.draw do
 
   post '/send-record' => 'twilio#email'
   
-  get '/dail-result' => 'twilio#dail_result'
+  get '/dial-result' => 'twilio#dial_result'
   
   get '/calling_info' => 'twilio#calling_info'
   

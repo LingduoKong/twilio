@@ -139,7 +139,7 @@ class TwilioController < ApplicationController
 		if index >= $numbers.length 
 			
 			response = Twilio::TwiML::Response.new do |r|
-				r.Dial :timeout => '10', :action => "/dail-result?uuid=#{params['uuid']}", :method => 'get', :record => 'record-from-answer' do |d|
+				r.Dial :timeout => '10', :action => "/dial-result?uuid=#{params['uuid']}", :method => 'get', :record => 'record-from-answer' do |d|
 					d.Number $call_center_number 
 				end
 			end
@@ -150,7 +150,7 @@ class TwilioController < ApplicationController
 		else
 			
 			response = Twilio::TwiML::Response.new do |r|
-				r.Dial :timeout => '10', :action => "/dail-result?uuid=#{params['uuid']}&index=#{index}", :method => 'get', :record => 'record-from-answer' do |d|
+				r.Dial :timeout => '10', :action => "/dial-result?uuid=#{params['uuid']}&index=#{index}", :method => 'get', :record => 'record-from-answer' do |d|
 					d.Number $numbers[index][:number]
 				end
 			end
@@ -162,7 +162,7 @@ class TwilioController < ApplicationController
 		render xml: response.text
 	end
 	
-	def dail_result
+	def dial_result
 		puts params['DialCallStatus']
 		puts $incoming_calls
 		
@@ -246,6 +246,10 @@ class TwilioController < ApplicationController
 		$incoming_calls = {}
 		# call center number:
 		$call_center_number = "+13122928193"
+	end
+	
+	def business_process
+		
 	end
 	
 end
