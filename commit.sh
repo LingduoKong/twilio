@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo $*
 git add -A
-git commit -m "spanish language tree finished" 
+git commit -m $* 
 git push -u origin master
