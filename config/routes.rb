@@ -1,8 +1,10 @@
 Rails.application.routes.draw do
   
 # match ':controller(/:action(/:id))', :via => [:get,:post]
-  
-  get '/' => 'twilio#root'
+
+  root 'reports#history_stats' 
+ 
+  get '/' => 'reports#history_stats'
 
   get '/concierge_entrance' => 'twilio#concierge_entrance'
 

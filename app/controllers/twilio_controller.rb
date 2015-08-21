@@ -140,8 +140,7 @@ class TwilioController < ApplicationController
 			
 			response = Twilio::TwiML::Response.new do |r|
 				r.Dial :timeout => '10', :action => "/dail-result?uuid=#{params['uuid']}", :method => 'get', :record => 'record-from-answer' do |d|
-					# d.Number '+14149302932'
-					d.Number '+13122928193'
+					d.Number $call_center_number 
 				end
 			end
 			
@@ -221,6 +220,7 @@ class TwilioController < ApplicationController
 	end
 	
 	def update_numbers
+		require 'concurrent'
 		if !$incoming_calls.present?
 			if params["passwd"] !=  Rails.application.secrets.UPDATE_PASSWD
 				redirect_to "/numbers", notice: "password error"
@@ -244,6 +244,8 @@ class TwilioController < ApplicationController
 			{number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
 		]
 		$incoming_calls = {}
+		# call center number:
+		$call_center_number = "+13122928193"
 	end
 	
 end
