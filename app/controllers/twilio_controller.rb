@@ -10,8 +10,9 @@ class TwilioController < ApplicationController
 		if $numbers == nil || $incoming_calls == nil
 			reset_numbers
 		end
+
 		
-		if h > 8 && h < 17 && wday != 0 && wday != 6
+		if h > 10 && h < 17 && wday != 0 && wday != 6
 			uuid = UUID.new.generate
 			$incoming_calls[uuid] = { :Caller => params["Caller"] }
 			user = User.find_by_number(params["Caller"])
@@ -37,7 +38,13 @@ class TwilioController < ApplicationController
 			pc.save
 			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
 			id = pc.id
-			redirect_to "/non_business?id=#{id}"
+			response = Twilio::TwiML::Response.new do |r|
+				r.Play "https://raw.githubusercontent.com/LingduoKong/twilio/master/NoWorkingTimeRecord.mp3"
+				r.Record :maxLength => '60', :transcribe => true, 
+				:transcribeCallback=> "/send-record?id=#{id}",
+				:action => "/handle-record?id=#{id}", :method => 'get'
+			end
+			render xml: response.text
 		end
 	end
 
@@ -87,16 +94,6 @@ class TwilioController < ApplicationController
 			$phone_history = Phone_call.order(calling_time: :desc).limit(10)
 		end
 		render json: $phone_history
-	end
-	
-	def non_business
-		response = Twilio::TwiML::Response.new do |r|
-			r.Play "https://raw.githubusercontent.com/LingduoKong/pj_2/master/NoWorkingTimeRecord.mp3"
-			r.Record :maxLength => '60', :transcribe => true, 
-			:transcribeCallback=> "/send-record?id=#{params['id']}",
-			:action => "/handle-record?id=#{params['id']}", :method => 'get'
-		end
-		render xml: response.text
 	end
 	
 	def business
