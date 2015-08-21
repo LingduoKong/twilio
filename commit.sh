@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo $1
+echo $*
 git add -A
-git commit -m $1 
+git commit -m $* 
 git push -u origin master
