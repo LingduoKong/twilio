@@ -7,8 +7,8 @@ class TwilioController < ApplicationController
 		h = tz.now.hour
 		wday = tz.now.wday
 		
-		if $incoming_calls == nil
-			$incoming_calls = {}
+		if $numbers == nil || $incoming_calls == nil
+			reset_numbers
 		end
 		
 		if h > 8 && h < 17 && wday != 0 && wday != 6
@@ -190,9 +190,6 @@ class TwilioController < ApplicationController
 	end
 	
 	def business_process(uuid)
-		if $numbers == nil
-			reset_numbers
-		end
 		
 		index = 0
 		$numbers.each do |number|
