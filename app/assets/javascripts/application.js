@@ -53,12 +53,13 @@ function show_history_calls(){
         async: false,
     }).responseText;
     var history_data = JSON.parse(calling_history_data);
-    var history = "<table class='table-responsive table table-striped'><thead><tr><th>Caller Number</th><th>Caller Name</th>" + 
+    var history = "<table class='table-responsive table table-striped'><thead><tr><th>ID</th><th>Caller Number</th><th>Caller Name</th>" + 
         "<th>Calling Time</th><th>Answer Number</th><th>Duration</th><th>Status</th></tr></thead>";
     history += "<tbody>";    
     if (history_data != null){
         for (var i=0; i<history_data.length; i++){
             history += "<tr>";
+            history += "<td>" + history_data[i].id + "</td>";
             history += "<td class='number'>" + history_data[i].inbound_number + "</td>";
             history += "<td>" + history_data[i].caller_name + "</td>";
             var date = new Date(history_data[i].calling_time * 1000);

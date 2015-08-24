@@ -5,19 +5,18 @@ class TwilioController < ApplicationController
 	def root_entrance
 		response = Twilio::TwiML::Response.new do |r|
 			r.Gather :numDigits => '1', :action => '/root_gathering', :method => 'get' do |g|
-				g.Say 'press 1. for English. press 2. for Spanish.', :voice => 'woman'
+				g.Say 'press 1. for Spanish. Or hold on', :voice => 'woman'
 			end
+			r.Redirect '/concierge_entrance?lg=en', :method => 'get'
 		end
 		render xml: response.text
 	end
 		
 	def root_gathering
 		if params['Digits'] == '1'
-			redirect_to '/concierge_entrance?lg=en'
-		elsif params['Digits'] == '2'
 			redirect_to '/concierge_entrance?lg=es'
 		else
-			redirect_to '/root_entrance'
+			redirect_to '/concierge_entrance?lg=en'
 		end
 	end
 	
@@ -177,9 +176,9 @@ class TwilioController < ApplicationController
 	def reset_numbers
 		require 'concurrent'      
 		$numbers = [
-			{number:'+17138940710', isbusy: Concurrent::Atom.new(false), lg: ['en','es']},
+			# {number:'+17138940710', isbusy: Concurrent::Atom.new(false), lg: ['en','es']},
 			{number:'+13122928193', isbusy: Concurrent::Atom.new(false), lg: ['en']},
-			{number:'+17738928145', isbusy: Concurrent::Atom.new(false), lg: ['es','en']},
+			# {number:'+17738928145', isbusy: Concurrent::Atom.new(false), lg: ['es','en']},
 		]
 		$incoming_calls = {}
 		# call center number:
@@ -192,7 +191,6 @@ class TwilioController < ApplicationController
 		$numbers.each do |number|
 			
 			if number[:lg].include?(params['lg'])
-
 				if $incoming_calls[uuid][number[:number]].present?
 					if $incoming_calls[uuid][number[:number]] == 'busy'
 						if number[:isbusy].compare_and_set(false,true)
