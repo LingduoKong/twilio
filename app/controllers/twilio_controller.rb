@@ -240,12 +240,16 @@ class TwilioController < ApplicationController
 	def reset_numbers
 		require 'concurrent'      
 		$numbers = [
-			{number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
-			{number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
+			# {number:'+13122928193', isbusy: Concurrent::Atom.new(false)},
+			# {number:'+17738928145', isbusy: Concurrent::Atom.new(false)},
+			{number:'+13125959234', isbusy: Concurrent::Atom.new(false)},
+			{number:'+13125959240', isbusy: Concurrent::Atom.new(false)},
+
 		]
 		$incoming_calls = {}
 		# call center number:
-		$call_center_number = "+13122928193"
+		# $call_center_number = "+13122928193"
+		$call_center_number = "+14149302932"
 	end
 	
 end

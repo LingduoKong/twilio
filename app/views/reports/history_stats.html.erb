@@ -22,7 +22,8 @@
  <table table class='table-responsive table table-striped'>
      <thead>
          <tr>
-            <th>Caller Number</th>
+            <th>ID</th>
+	    <th>Caller Number</th>
             <th>Caller Name</th>
             <th>Calling Time</th>
             <th>Answer Number</th>
@@ -32,6 +33,7 @@
     </thead>
     <% @history_data.each do |call| %>
     <tr>
+	<td><%= call.id %></td>
         <td class="number"><%= call.inbound_number%></td>
         <td><%= call.caller_name%></td>
         <td class="time"><%= call.calling_time%></td>
