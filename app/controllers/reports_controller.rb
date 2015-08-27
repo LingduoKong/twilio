@@ -42,7 +42,7 @@ class ReportsController < ApplicationController
         end
         
         if params[:to].present?
-            @result = @result.where("calling_time <= ?", dateToTimeStamp(params[:to]))
+            @result = @result.where("calling_time <= ?", dateToTimeStamp(params[:to]) + 60*60*24 )
         end
         
         if params[:status].present? && params[:status] != "All status"
