@@ -246,7 +246,9 @@ class TwilioController < ApplicationController
 			{number:'+13125959240', isbusy: Concurrent::Atom.new(false)},
 
 		]
-		$incoming_calls = {}
+		if !$incoming_calls.present? 
+			$incoming_calls = {}
+		end
 		# call center number:
 		# $call_center_number = "+13122928193"
 		$call_center_number = "+14149302932"
